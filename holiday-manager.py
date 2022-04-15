@@ -9,7 +9,7 @@ def Get_HTML(url): # Function makes a get request for a URL and returns a JSON D
     response = requests.get(url)
     return response
 
-def Create_Holiday_Dict(URL, year):
+def Create_Holiday_List(URL, year):
         
     html = Get_HTML(URL)
 
@@ -63,35 +63,38 @@ def Create_Holiday_Dict(URL, year):
         holiday_list.append(holiday.text)
 
     # Create Holiday Dictionary for Year
-    holiday_dict = list()
+    all_holiday_list = list()
     for i in range(len(holiday_list)):
         one_holiday = {"name": holiday_list[i],"date":date_list[i]} 
-        holiday_dict.append(one_holiday)
-    holiday_dict = {"holidays":holiday_dict}
-    return holiday_dict
+        all_holiday_list.append(one_holiday)
+
+    return all_holiday_list
 
 
 # 2020 Holidays
 URL = "https://www.timeanddate.com/holidays/us/2020"
-holiday_dict_2020 = Create_Holiday_Dict(URL, 2020)
+holiday_list_2020 = Create_Holiday_List(URL, 2020)
 
 # 2021 Holidays
 URL = "https://www.timeanddate.com/holidays/us/2021"
-holiday_dict_2021 = Create_Holiday_Dict(URL, 2021)
+holiday_list_2021 = Create_Holiday_List(URL, 2021)
 
 # 2022 Holidays
 URL = "https://www.timeanddate.com/holidays/us/2022"
-holiday_dict_2022 = Create_Holiday_Dict(URL, 2022)
+holiday_list_2022 = Create_Holiday_List(URL, 2022)
 
 # 2023 Holidays
 URL = "https://www.timeanddate.com/holidays/us/2023"
-holiday_dict_2023 = Create_Holiday_Dict(URL, 2023)
+holiday_list_2023 = Create_Holiday_List(URL, 2023)
 
 # 2024 Holidays
 URL = "https://www.timeanddate.com/holidays/us/2024"
-holiday_dict_2024 = Create_Holiday_Dict(URL, 2024)
+holiday_list_2024 = Create_Holiday_List(URL, 2024)
 
-print(holiday_dict_2020['holidays'][0]['date'])
+master_holiday_list = holiday_list_2020 + holiday_list_2021 + holiday_list_2022 + holiday_list_2023 + holiday_list_2024
+holiday_dict = {'holidays':master_holiday_list}
+print(holiday_dict['holidays'][0]['name'])
+
 
 # -------------------------------------------
 # Modify the holiday class to 
