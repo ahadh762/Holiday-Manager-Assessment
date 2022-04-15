@@ -105,12 +105,18 @@ master_holiday_list = holiday_list_2020 + holiday_list_2021 + holiday_list_2022 
 for i in range(len(sample_holiday_list)):
     master_holiday_list.append(sample_holiday_list[i])
 
-
 # Sort the Master Holiday List by Date before using Sorted() with lambda function
-master_holiday_list = sorted(master_holiday_list, key = lambda item: item['date'])
-holiday_dict = {'holidays':master_holiday_list}
+# Function sorts by Date and then Alphabetical Order by Name (for Holidays that have the same Date)
+master_holiday_list = sorted(master_holiday_list, key = lambda x: (x['date'], x['name']))
+holiday_dict = {'holidays': master_holiday_list}
 
-print(holiday_dict.items())
+# Dump Dictionary to Json and Write to File
+updated_holiday_json = json.dumps(holiday_dict, indent=3, separators=(',', ': '))
+with open("holidays_(2020-2024).json", "w") as outfile:
+    outfile.write(updated_holiday_json)
+    outfile.close()
+
+
 
 
 # -------------------------------------------
