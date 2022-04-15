@@ -20,7 +20,7 @@ def Create_Holiday_Dict(URL, year):
 
     # Remove Previous and Next Year Tags
     # Try-except blocks throw AttributeError exception when soup.find returns a None type
-    
+
     try:
         previous_year = soup.find('a', href="/holidays/us/" + previous_year_str)
         previous_year.decompose()
@@ -63,18 +63,23 @@ def Create_Holiday_Dict(URL, year):
         holiday_list.append(holiday.text)
 
     # Create Holiday Dictionary for Year
-    holiday_dict = {holiday_list[i]:date_list[i]  for i in range(len(holiday_list))}
+    holiday_dict = list()
+    for i in range(len(holiday_list)):
+        one_holiday = {"name": holiday_list[i],"date":date_list[i]} 
+        holiday_dict.append(one_holiday)
+    holiday_dict = {"holidays":holiday_dict}
     return holiday_dict
 
-# # # 2020 Holidays
+
+# 2020 Holidays
 URL = "https://www.timeanddate.com/holidays/us/2020"
 holiday_dict_2020 = Create_Holiday_Dict(URL, 2020)
 
-# # 2021 Holidays
+# 2021 Holidays
 URL = "https://www.timeanddate.com/holidays/us/2021"
 holiday_dict_2021 = Create_Holiday_Dict(URL, 2021)
 
-# # 2022 Holidays
+# 2022 Holidays
 URL = "https://www.timeanddate.com/holidays/us/2022"
 holiday_dict_2022 = Create_Holiday_Dict(URL, 2022)
 
@@ -82,11 +87,11 @@ holiday_dict_2022 = Create_Holiday_Dict(URL, 2022)
 URL = "https://www.timeanddate.com/holidays/us/2023"
 holiday_dict_2023 = Create_Holiday_Dict(URL, 2023)
 
-# # 2024 Holidays
+# 2024 Holidays
 URL = "https://www.timeanddate.com/holidays/us/2024"
 holiday_dict_2024 = Create_Holiday_Dict(URL, 2024)
 
-
+print(holiday_dict_2020['holidays'][0]['date'])
 
 # -------------------------------------------
 # Modify the holiday class to 
