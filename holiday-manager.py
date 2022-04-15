@@ -1,4 +1,5 @@
 import datetime
+from doctest import master
 import json
 from bs4 import BeautifulSoup
 import requests
@@ -70,6 +71,12 @@ def Create_Holiday_List(URL, year):
 
     return all_holiday_list
 
+# Sample JSON
+with open('holidays.json') as f:
+    sample_holidays = json.load(f)
+    f.close()
+
+sample_holiday_list = list(sample_holidays['holidays'])
 
 # 2020 Holidays
 URL = "https://www.timeanddate.com/holidays/us/2020"
@@ -91,9 +98,19 @@ holiday_list_2023 = Create_Holiday_List(URL, 2023)
 URL = "https://www.timeanddate.com/holidays/us/2024"
 holiday_list_2024 = Create_Holiday_List(URL, 2024)
 
+
+# Combine various Year Lists into Master Holiday List
+# Append Sample JSON List of Dictionaries to Master List
 master_holiday_list = holiday_list_2020 + holiday_list_2021 + holiday_list_2022 + holiday_list_2023 + holiday_list_2024
+for i in range(len(sample_holiday_list)):
+    master_holiday_list.append(sample_holiday_list[i])
+
+
+# Sort the Master Holiday List by Date before using Sorted() with lambda function
+master_holiday_list = sorted(master_holiday_list, key = lambda item: item['date'])
 holiday_dict = {'holidays':master_holiday_list}
-print(holiday_dict['holidays'][0]['name'])
+
+print(holiday_dict.items())
 
 
 # -------------------------------------------
