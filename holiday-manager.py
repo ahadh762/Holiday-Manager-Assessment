@@ -5,44 +5,86 @@ import requests
 from dataclasses import dataclass
 
 
-def getHTML(url): # Function makes a get request for a URL and returns a JSON Dict
+def Get_HTML(url): # Function makes a get request for a URL and returns a JSON Dict
     response = requests.get(url)
     return response
 
-URL = "https://www.timeanddate.com/holidays/us/"
-html = getHTML(URL)
+def Create_Holiday_Dict(URL, year):
+        
+    html = Get_HTML(URL)
 
-soup = BeautifulSoup(html.content,"lxml")
+    soup = BeautifulSoup(html.content,"lxml")
 
-# Remove 2021 and 2023 fields
-year_2021 = soup.find('a', href="/holidays/us/2021")
-year_2021.decompose()
-year_2023 = soup.find('a', href="/holidays/us/2023")
-year_2023.decompose()
+    previous_year_str = str(year - 1)
+    next_year_str = str(year + 1)
 
-# Remove Holidays with Tentative Dates
-for tentative_date in soup.select('a:-soup-contains("(Tentative Date)")'):
-    tentative_date.decompose()
+    # Remove Previous and Next Year Tags
+    # Try-except blocks throw AttributeError exception when soup.find returns a None type
+    
+    try:
+        previous_year = soup.find('a', href="/holidays/us/" + previous_year_str)
+        previous_year.decompose()
+    except AttributeError:
+        for previous_year in soup.find_all('a', href="/holidays/us/"):
+            previous_year.decompose()
 
-# Remove You Might Like This Section
-for extra in soup.find('h2',class_ = 'rel-posts__title'):
-    extra.find_next().decompose()
+    try:
+        next_year = soup.find('a', href="/holidays/us/" + next_year_str)
+        next_year.decompose()
+    except AttributeError:
+        for next_year in soup.find_all('a', href="/holidays/us/"):
+            next_year.decompose()
 
-# Initialize list of Holidays and Dates
-holiday_list = list()
-date_list = list()
 
-# Find all US Holiday Names and Dates for Year 2022
-for holiday in soup.select('a[href*="/holidays/us/"]'):
-    date = holiday.find_previous().find_previous().find_previous()
-    date = date.getText() + ' 2022' + ' 11:17AM'
-    format = '%b %d %Y %I:%M%p'
-    date = str(datetime.datetime.strptime(date, format).date())
-    date_list.append(date)
-    holiday_list.append(holiday.text)
+    for next_year in soup.find_all('a', href="/holidays/us/"):
+        print(next_year, " chungus")
+        next_year.decompose()
 
-# Create Holiday Dictionary
-holiday_dict = {holiday_list[i]:date_list[i]  for i in range(len(holiday_list))}
+    # Remove Holidays with Tentative Dates
+    for tentative_date in soup.select('a:-soup-contains("(Tentative Date)")'):
+        tentative_date.decompose()
+
+    # Remove You Might Like This/Might Also Like Section
+    for extra in soup.find('h2',class_ = 'rel-posts__title'):
+        extra.find_next().decompose()
+
+    # Initialize list of Holidays and Dates
+    holiday_list = list()
+    date_list = list()
+
+    # Find all US Holiday Names and Dates for Current Year
+    # 11:17AM string is a placeholder to get the Datetime function to work
+    for holiday in soup.select('a[href*="/holidays/us/"]'):
+        date = holiday.find_previous().find_previous().find_previous()
+        date = date.getText() + f" {year}" + ' 11:17AM'
+        format = '%b %d %Y %I:%M%p'
+        date = str(datetime.datetime.strptime(date, format).date())
+        date_list.append(date)
+        holiday_list.append(holiday.text)
+
+    # Create Holiday Dictionary for Year
+    holiday_dict = {holiday_list[i]:date_list[i]  for i in range(len(holiday_list))}
+    return holiday_dict
+
+# # # 2020 Holidays
+URL = "https://www.timeanddate.com/holidays/us/2020"
+holiday_dict_2020 = Create_Holiday_Dict(URL, 2020)
+
+# # 2021 Holidays
+URL = "https://www.timeanddate.com/holidays/us/2021"
+holiday_dict_2021 = Create_Holiday_Dict(URL, 2021)
+
+# # 2022 Holidays
+URL = "https://www.timeanddate.com/holidays/us/2022"
+holiday_dict_2022 = Create_Holiday_Dict(URL, 2022)
+
+# 2023 Holidays
+URL = "https://www.timeanddate.com/holidays/us/2023"
+holiday_dict_2023 = Create_Holiday_Dict(URL, 2023)
+
+# # 2024 Holidays
+URL = "https://www.timeanddate.com/holidays/us/2024"
+holiday_dict_2024 = Create_Holiday_Dict(URL, 2024)
 
 
 
