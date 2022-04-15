@@ -3,7 +3,6 @@ import json
 from bs4 import BeautifulSoup
 import requests
 from dataclasses import dataclass
-import re
 
 
 def getHTML(url): # Function makes a get request for a URL and returns a JSON Dict
@@ -15,7 +14,7 @@ html = getHTML(URL)
 
 soup = BeautifulSoup(html.content,"lxml")
 
-# Remove 2021 and 2023
+# Remove 2021 and 2023 fields
 year_2021 = soup.find('a', href="/holidays/us/2021")
 year_2021.decompose()
 year_2023 = soup.find('a', href="/holidays/us/2023")
@@ -25,19 +24,26 @@ year_2023.decompose()
 for tentative_date in soup.select('a:-soup-contains("(Tentative Date)")'):
     tentative_date.decompose()
 
-# Remove Card Text
-for card_text in soup.find_all('p', class_ = "card__text"):
-    card_text.decompose()
+# Remove You Might Like This Section
+for extra in soup.find('h2',class_ = 'rel-posts__title'):
+    extra.find_next().decompose()
 
+# Initialize list of Holidays and Dates
 holiday_list = list()
+date_list = list()
 
-# Find all Holiday Names
+# Find all US Holiday Names and Dates for Year 2022
 for holiday in soup.select('a[href*="/holidays/us/"]'):
-    holiday_list.append(holiday.getText())
+    date = holiday.find_previous().find_previous().find_previous()
+    date = date.getText() + ' 2022' + ' 11:17AM'
+    format = '%b %d %Y %I:%M%p'
+    date = str(datetime.datetime.strptime(date, format).date())
+    date_list.append(date)
+    holiday_list.append(holiday.text)
 
-# Remove Repeat Holidays
-holiday_list = list(dict.fromkeys(holiday_list))
-print(holiday_list)
+# Create Holiday Dictionary
+holiday_dict = {holiday_list[i]:date_list[i]  for i in range(len(holiday_list))}
+
 
 
 # -------------------------------------------
