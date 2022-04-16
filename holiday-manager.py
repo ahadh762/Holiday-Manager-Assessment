@@ -5,92 +5,6 @@ import requests
 from dataclasses import dataclass
 
 
-
-def Create_Holiday_List(URL, year):
-        
-    html = requests.get(URL).text
-
-    soup = BeautifulSoup(html,"html.parser")
-
-    holiday_list = []
-    dates_list = []
-
-    # Remove Holidays with Tentative Dates
-    for tentative_date in soup.select('a:-soup-contains("(Tentative Date)")'):
-        tentative_date.decompose()
-
-    # Find Table with Data
-    table = soup.find('article',attrs = {'class':'table-data'})
-    for row in table.find_all_next('tbody'): 
-        # Find any tag that contains href /holidays/us/
-        holidays = row.select('a[href *= "/holidays/us/"]')
-        for holiday in holidays:
-            holiday_list.append(holiday.text)
-            # Date is contained in text in the tag that is 3 tags prior to the href tag
-            date = holiday.find_previous().find_previous().find_previous()
-            # 11:17AM is a placeholder needed for the DateTime Object to work
-            date = date.getText() + f" {year}" + ' 11:17AM'
-            format = '%b %d %Y %I:%M%p'
-            date = str(datetime.datetime.strptime(date, format).date())
-            dates_list.append(date)
-
-    # Create Holiday Dictionary for Year
-    all_holiday_list = list()
-    for i in range(len(holiday_list)):
-        one_holiday = {"name": holiday_list[i],"date":dates_list[i]} 
-        all_holiday_list.append(one_holiday)
-
-    return all_holiday_list
-
-# Sample JSON
-with open('holidays.json') as f:
-    sample_holidays = json.load(f)
-    f.close()
-
-sample_holiday_list = list(sample_holidays['holidays'])
-
-# 2020 Holidays
-URL = "https://www.timeanddate.com/holidays/us/2020"
-holiday_list_2020 = Create_Holiday_List(URL, 2020)
-
-# 2021 Holidays
-URL = "https://www.timeanddate.com/holidays/us/2021"
-holiday_list_2021 = Create_Holiday_List(URL, 2021)
-
-# 2022 Holidays
-URL = "https://www.timeanddate.com/holidays/us/2022"
-holiday_list_2022 = Create_Holiday_List(URL, 2022)
-
-# 2023 Holidays
-URL = "https://www.timeanddate.com/holidays/us/2023"
-holiday_list_2023 = Create_Holiday_List(URL, 2023)
-
-# 2024 Holidays
-URL = "https://www.timeanddate.com/holidays/us/2024"
-holiday_list_2024 = Create_Holiday_List(URL, 2024)
-
-
-# Combine various Year Lists into Master Holiday List
-# Append Sample JSON List of Dictionaries to Master List
-master_holiday_list = holiday_list_2020 + holiday_list_2021 + holiday_list_2022 + holiday_list_2023 + holiday_list_2024
-for i in range(len(sample_holiday_list)):
-    master_holiday_list.append(sample_holiday_list[i])
-
-# Sort the Master Holiday List by Date before using Sorted() with lambda function
-# Function sorts by Date and then Alphabetical Order by Name (for Holidays that have the same Date)
-master_holiday_list = sorted(master_holiday_list, key = lambda x: (x['date'], x['name']))
-holiday_dict = {'holidays': master_holiday_list}
-
-
-# Dump Dictionary to Json and Write to File
-updated_holiday_json = json.dumps(holiday_dict, indent=3, separators=(',', ': '))
-with open("holidays_(2020-2024).json", "w") as outfile:
-    outfile.write(updated_holiday_json)
-    outfile.close()
-
-
-
-
 # -------------------------------------------
 # Modify the holiday class to 
 # 1. Only accept Datetime objects for date.
@@ -138,7 +52,7 @@ class HolidayList:
         else:
             self.innerHolidays.append(holidayObj)
             print(f"\nSuccess:\n{holidayObj} has been added to the holiday list.\n")
-            
+
         # Make sure holidayObj is an Holiday Object by checking the type
         # Use innerHolidays.append(holidayObj) to add holiday
         # print to the user that you added a holiday
@@ -196,12 +110,76 @@ class HolidayList:
 
          # Write out json file to selected file.
         
-#     def scrapeHolidays():
-#         # Scrape Holidays from https://www.timeanddate.com/holidays/us/ 
-#         # Remember, 2 previous years, current year, and 2  years into the future. You can scrape multiple years by adding year to the timeanddate URL. For example https://www.timeanddate.com/holidays/us/2022
-#         # Check to see if name and date of holiday is in innerHolidays array
-#         # Add non-duplicates to innerHolidays
-#         # Handle any exceptions.     
+    def Scraped_Holiday_List(self, URL, year):
+            
+        try:
+            html = requests.get(URL)
+            html.raise_for_status()
+            html = requests.get(URL).text
+        except requests.exceptions.HTTPError as err:
+            print(err)
+
+        soup = BeautifulSoup(html,"html.parser")
+
+        # Remove Holidays with Tentative Dates
+        for tentative_date in soup.select('a:-soup-contains("(Tentative Date)")'):
+            tentative_date.decompose()
+            
+
+        # Find Table with Data
+        table = soup.find('article',attrs = {'class':'table-data'})
+        for row in table.find_all_next('tbody'): 
+            # Find any tag that contains href /holidays/us/
+
+            holidays = row.select('a[href *= "/holidays/us/"]')
+            for holiday in holidays:
+                holiday_name = holiday.text
+
+                # Date is contained in text in the tag that is 3 tags prior to the href tag
+                date = holiday.find_previous().find_previous().find_previous()
+
+                # 11:17AM is a placeholder needed for the DateTime Object to work
+                holiday_date = date.getText() + f" {year}" + ' 11:17AM'
+                format = '%b %d %Y %I:%M%p'
+                holiday_date = datetime.datetime.strptime(holiday_date, format).date()
+
+                # Add Non-Duplicates to Inner List
+                holiday = self.findHoliday(holiday_name, holiday_date)
+
+                if holiday is None:
+                    # Instantiate Holiday Objects and Add them to List of Objects
+                    holidayObj = Holiday(holiday_name, holiday_date)
+                    self.addHoliday(holidayObj)
+
+                
+    def scrapeHolidays(self):
+
+        # Add 2020 Holidays
+        URL = "https://www.timeanddate.com/holidays/us/2020"
+        self.Scraped_Holiday_List(URL, 2020)
+
+        # Add 2021 Holidays
+        URL = "https://www.timeanddate.com/holidays/us/2021"
+        self.Scraped_Holiday_List(URL, 2021)
+
+        # Add 2022 Holidays
+        URL = "https://www.timeanddate.com/holidays/us/2022"
+        self.Scraped_Holiday_List(URL, 2022)
+
+        # Add 2023 Holidays
+        URL = "https://www.timeanddate.com/holidays/us/2023"
+        self.Scraped_Holiday_List(URL, 2023)
+
+        # Add 2024 Holidays
+        URL = "https://www.timeanddate.com/holidays/us/2024"
+        self.Scraped_Holiday_List(URL, 2024)
+
+
+        # Scrape Holidays from https://www.timeanddate.com/holidays/us/ 
+        # Remember, 2 previous years, current year, and 2  years into the future. You can scrape multiple years by adding year to the timeanddate URL. For example https://www.timeanddate.com/holidays/us/2022
+        # Check to see if name and date of holiday is in innerHolidays array
+        # Add non-duplicates to innerHolidays
+        # Handle any exceptions.     
 
 #     def numHolidays():
 #         # Return the total number of holidays in innerHolidays
