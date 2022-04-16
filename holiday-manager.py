@@ -26,7 +26,7 @@ def Create_Holiday_List(URL, year):
         holidays = row.select('a[href *= "/holidays/us/"]')
         for holiday in holidays:
             holiday_list.append(holiday.text)
-            # Date is contained in text in the tag that is 3 tags prior
+            # Date is contained in text in the tag that is 3 tags prior to the href tag
             date = holiday.find_previous().find_previous().find_previous()
             # 11:17AM is a placeholder needed for the DateTime Object to work
             date = date.getText() + f" {year}" + ' 11:17AM'
