@@ -1,72 +1,43 @@
 import datetime
-from doctest import master
 import json
 from bs4 import BeautifulSoup
 import requests
 from dataclasses import dataclass
 
 
-def Get_HTML(url): # Function makes a get request for a URL and returns a JSON Dict
-    response = requests.get(url)
-    return response
 
 def Create_Holiday_List(URL, year):
         
-    html = Get_HTML(URL)
+    html = requests.get(URL)
 
     soup = BeautifulSoup(html.content,"lxml")
 
-    previous_year_str = str(year - 1)
-    next_year_str = str(year + 1)
-
-    # Remove Previous and Next Year Tags
-    # Try-except blocks throw AttributeError exception when soup.find returns a None type
-
-    try:
-        previous_year = soup.find('a', href="/holidays/us/" + previous_year_str)
-        previous_year.decompose()
-    except AttributeError:
-        for previous_year in soup.find_all('a', href="/holidays/us/"):
-            previous_year.decompose()
-
-    try:
-        next_year = soup.find('a', href="/holidays/us/" + next_year_str)
-        next_year.decompose()
-    except AttributeError:
-        for next_year in soup.find_all('a', href="/holidays/us/"):
-            next_year.decompose()
-
-
-    for next_year in soup.find_all('a', href="/holidays/us/"):
-        print(next_year, " chungus")
-        next_year.decompose()
+    holiday_list = []
+    dates_list = []
 
     # Remove Holidays with Tentative Dates
     for tentative_date in soup.select('a:-soup-contains("(Tentative Date)")'):
         tentative_date.decompose()
 
-    # Remove You Might Like This/Might Also Like Section
-    for extra in soup.find('h2',class_ = 'rel-posts__title'):
-        extra.find_next().decompose()
-
-    # Initialize list of Holidays and Dates
-    holiday_list = list()
-    date_list = list()
-
-    # Find all US Holiday Names and Dates for Current Year
-    # 11:17AM string is a placeholder to get the Datetime function to work
-    for holiday in soup.select('a[href*="/holidays/us/"]'):
-        date = holiday.find_previous().find_previous().find_previous()
-        date = date.getText() + f" {year}" + ' 11:17AM'
-        format = '%b %d %Y %I:%M%p'
-        date = str(datetime.datetime.strptime(date, format).date())
-        date_list.append(date)
-        holiday_list.append(holiday.text)
+    # Find Table with Data
+    table = soup.find('article',attrs = {'class':'table-data'})
+    for row in table.find_all_next('tbody'): 
+        # Find any tag that contains href /holidays/us/
+        holidays = row.select('a[href *= "/holidays/us/"]')
+        for holiday in holidays:
+            holiday_list.append(holiday.text)
+            # Date is contained in text in the tag that is 3 tags prior
+            date = holiday.find_previous().find_previous().find_previous()
+            # 11:17AM is a placeholder needed for the DateTime Object to work
+            date = date.getText() + f" {year}" + ' 11:17AM'
+            format = '%b %d %Y %I:%M%p'
+            date = str(datetime.datetime.strptime(date, format).date())
+            dates_list.append(date)
 
     # Create Holiday Dictionary for Year
     all_holiday_list = list()
     for i in range(len(holiday_list)):
-        one_holiday = {"name": holiday_list[i],"date":date_list[i]} 
+        one_holiday = {"name": holiday_list[i],"date":dates_list[i]} 
         all_holiday_list.append(one_holiday)
 
     return all_holiday_list
@@ -110,6 +81,7 @@ for i in range(len(sample_holiday_list)):
 master_holiday_list = sorted(master_holiday_list, key = lambda x: (x['date'], x['name']))
 holiday_dict = {'holidays': master_holiday_list}
 
+
 # Dump Dictionary to Json and Write to File
 updated_holiday_json = json.dumps(holiday_dict, indent=3, separators=(',', ': '))
 with open("holidays_(2020-2024).json", "w") as outfile:
@@ -126,34 +98,37 @@ with open("holidays_(2020-2024).json", "w") as outfile:
 # 3. You may drop the init if you are using @dataclasses
 # --------------------------------------------
 
-class Holiday:
+# class Holiday:
+#     def __init__(self,holiday_name,date):
+#         self.__holiday_name = holiday_name
+#         if not isinstance(date, datetime.date):
+#             raise TypeError("Date must be a Datetime object!")
+#         else:
+#             self.__date = date
 
-    def __init__(self,holiday_name,date):
-        self.__holiday_name = holiday_name
-        if not isinstance(date, datetime.date):
-            raise TypeError("Date must be a Datetime object!")
-        else:
-            self.__date = date
 
-
-    def __str__ (self):
-        return f'{self.__holiday_name}, {self.__date}'
-        # String output
-        # Holiday output when printed.
-
+#     def __str__ (self):
+#         return f'{self.__holiday_name} ({self.__date})'
+#         # String output
+#         # Holiday output when printed.
 
 
 
-# -------------------------------------------
-# The HolidayList class acts as a wrapper and container
-# For the list of holidays
-# Each method has pseudo-code instructions
-# --------------------------------------------
+
+# # -------------------------------------------
+# # The HolidayList class acts as a wrapper and container
+# # For the list of holidays
+# # Each method has pseudo-code instructions
+# # --------------------------------------------
 # class HolidayList:
-#    def __init__(self):
+#     def __init__(self):
 #        self.innerHolidays = []
-   
-#     def addHoliday(holidayObj):
+#     def addHoliday(self, holidayObj):
+#         if not isinstance(holidayObj, Holiday()):
+#             raise TypeError("Holiday must be Holiday Object!")        
+#         else:
+#             self.innerHolidays.append(holidayObj)
+
 #         # Make sure holidayObj is an Holiday Object by checking the type
 #         # Use innerHolidays.append(holidayObj) to add holiday
 #         # print to the user that you added a holiday
