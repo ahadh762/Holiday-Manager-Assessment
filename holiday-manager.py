@@ -98,19 +98,25 @@ with open("holidays_(2020-2024).json", "w") as outfile:
 # 3. You may drop the init if you are using @dataclasses
 # --------------------------------------------
 
-# class Holiday:
-#     def __init__(self,holiday_name,date):
-#         self.__holiday_name = holiday_name
-#         if not isinstance(date, datetime.date):
-#             raise TypeError("Date must be a Datetime object!")
-#         else:
-#             self.__date = date
+class Holiday:
+    def __init__(self,holiday_name,date):
+        self.__holiday_name = holiday_name
 
+        if not isinstance(date, datetime.date):
+            raise TypeError("Date must be a Datetime object!")
+        else:
+            self.__date = date
 
-#     def __str__ (self):
-#         return f'{self.__holiday_name} ({self.__date})'
-#         # String output
-#         # Holiday output when printed.
+    def get_name(self):
+        return self.__holiday_name
+
+    def get_date(self):
+        return self.__date
+
+    def __str__ (self):
+        return f'{self.__holiday_name} ({self.__date})'
+        # String output
+        # Holiday output when printed.
 
 
 
@@ -120,34 +126,75 @@ with open("holidays_(2020-2024).json", "w") as outfile:
 # # For the list of holidays
 # # Each method has pseudo-code instructions
 # # --------------------------------------------
-# class HolidayList:
-#     def __init__(self):
-#        self.innerHolidays = []
-#     def addHoliday(self, holidayObj):
-#         if not isinstance(holidayObj, Holiday()):
-#             raise TypeError("Holiday must be Holiday Object!")        
-#         else:
-#             self.innerHolidays.append(holidayObj)
 
-#         # Make sure holidayObj is an Holiday Object by checking the type
-#         # Use innerHolidays.append(holidayObj) to add holiday
-#         # print to the user that you added a holiday
+class HolidayList:
 
-#     def findHoliday(HolidayName, Date):
-#         # Find Holiday in innerHolidays
-#         # Return Holiday
+    def __init__(self):
+        self.innerHolidays = []
 
-#     def removeHoliday(HolidayName, Date):
-#         # Find Holiday in innerHolidays by searching the name and date combination.
-#         # remove the Holiday from innerHolidays
-#         # inform user you deleted the holiday
+    def addHoliday(self, holidayObj):
+        if not isinstance(holidayObj, Holiday):
+            raise TypeError("\nHoliday must be a Holiday Object!\n")
+        else:
+            self.innerHolidays.append(holidayObj)
+            print(f"\nSuccess:\n{holidayObj} has been added to the holiday list.\n")
+            
+        # Make sure holidayObj is an Holiday Object by checking the type
+        # Use innerHolidays.append(holidayObj) to add holiday
+        # print to the user that you added a holiday
 
-#     def read_json(filelocation):
-#         # Read in things from json file location
-#         # Use addHoliday function to add holidays to inner list.
+    def findHoliday(self, HolidayName, Date):
+        found_holiday = None
+        for holiday in self.innerHolidays:
+            if HolidayName == holiday.get_name() and Date == holiday.get_date():
+                found_holiday = holiday
+        return found_holiday
+        # Find Holiday in innerHolidays
+        # Return Holiday
 
-#     def save_to_json(filelocation):
-#         # Write out json file to selected file.
+    def removeHoliday(self, HolidayName, Date):
+        holiday = self.findHoliday(HolidayName, Date)
+        if holiday is None:
+            print(f"Error:\n{HolidayName} not found.\n")
+        else:
+            self.innerHolidays.remove(holiday)
+            print(f"\nSuccess:\n{HolidayName} has been removed from the holiday list.\n")
+            
+        # Find Holiday in innerHolidays by searching the name and date combination.
+        # remove the Holiday from innerHolidays
+        # inform user you deleted the holiday
+
+    def read_json(self, filelocation):
+        with open(filelocation) as f:
+            holidays_dict = json.load(f)
+            for i in range(len(holidays_dict['holidays'])):
+                holiday_name = holidays_dict['holidays'][i]['name']
+                holiday_date = holidays_dict['holidays'][i]['date']
+                holiday_date = datetime.date.fromisoformat(holiday_date)
+                holiday = Holiday(holiday_name, holiday_date)
+                self.addHoliday(holiday)
+            f.close()
+
+        # Read in things from json file location
+        # Use addHoliday function to add holidays to inner list.
+    
+    def save_to_json(self, filelocation):
+        master_holiday_list = []
+        holiday_dict = {}
+        for i in range(len(self.innerHolidays)):
+            holiday_name = self.innerHolidays[i].get_name()
+            holiday_date = str(self.innerHolidays[i].get_date())
+            one_holiday = {"name": holiday_name,"date": holiday_date}
+            master_holiday_list.append(one_holiday)
+        master_holiday_list = sorted(master_holiday_list, key = lambda x: (x['date'], x['name']))
+        holiday_dict = {'holidays': master_holiday_list}
+        updated_holiday_json = json.dumps(holiday_dict, indent=3, separators=(',', ': '))
+        
+        with open(f"{filelocation}.json", "w") as outfile:
+            outfile.write(updated_holiday_json)
+            outfile.close()
+
+         # Write out json file to selected file.
         
 #     def scrapeHolidays():
 #         # Scrape Holidays from https://www.timeanddate.com/holidays/us/ 
