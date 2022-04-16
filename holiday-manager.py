@@ -8,9 +8,9 @@ from dataclasses import dataclass
 
 def Create_Holiday_List(URL, year):
         
-    html = requests.get(URL)
+    html = requests.get(URL).text
 
-    soup = BeautifulSoup(html.content,"lxml")
+    soup = BeautifulSoup(html,"html.parser")
 
     holiday_list = []
     dates_list = []
