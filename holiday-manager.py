@@ -34,7 +34,6 @@ class Holiday:
 
 
 
-
 # # -------------------------------------------
 # # The HolidayList class acts as a wrapper and container
 # # For the list of holidays
@@ -174,21 +173,26 @@ class HolidayList:
         URL = "https://www.timeanddate.com/holidays/us/2024"
         self.Scraped_Holiday_List(URL, 2024)
 
-
         # Scrape Holidays from https://www.timeanddate.com/holidays/us/ 
         # Remember, 2 previous years, current year, and 2  years into the future. You can scrape multiple years by adding year to the timeanddate URL. For example https://www.timeanddate.com/holidays/us/2022
         # Check to see if name and date of holiday is in innerHolidays array
         # Add non-duplicates to innerHolidays
         # Handle any exceptions.     
 
-#     def numHolidays():
-#         # Return the total number of holidays in innerHolidays
+    def numHolidays(self):
+        return len(self.innerHolidays)
+        # Return the total number of holidays in innerHolidays
     
-#     def filter_holidays_by_week(year, week_number):
-#         # Use a Lambda function to filter by week number and save this as holidays, use the filter on innerHolidays
-#         # Week number is part of the the Datetime object
-#         # Cast filter results as list
-#         # return your holidays
+    def filter_holidays_by_week(self,year, week_number):
+        holidays = list(filter(lambda x: x.get_date().isocalendar()[1] == week_number \
+            and x.get_date().isocalendar()[0] == year, self.innerHolidays))
+    
+        return holidays
+
+        # Use a Lambda function to filter by week number and save this as holidays, use the filter on innerHolidays
+        # Week number is part of the the Datetime object
+        # Cast filter results as list
+        # return your holidays
 
 #     def displayHolidaysInWeek(holidayList):
 #         # Use your filter_holidays_by_week to get list of holidays within a week as a parameter
