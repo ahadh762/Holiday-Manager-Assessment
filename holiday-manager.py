@@ -420,7 +420,7 @@ class HolidayList:
                     date_text = datetime.datetime.strptime(date_text, '%Y-%m-%d').date()
                     return date_text
                 except ValueError:
-                    print("\nIncorrect data format, should be YYYY-MM-DD")
+                    print("\nIncorrect Date Format, should be YYYY-MM-DD")
                     continue
 
             
@@ -486,8 +486,9 @@ class HolidayList:
                 print()
                 self.save_to_json(filename)
                 print(f'\nSuccess:\nChanges saved to "{filename}.json"\n')
+                save_status = 1
 
-            self.Main_Menu()
+            self.Main_Menu(save_status)
 
         elif menu_selection == 4:
             print("\nView Holidays\n=================")
@@ -499,14 +500,13 @@ class HolidayList:
                         year_found = True
                         break
                 if year_found == False:
-                    print('\nError: Invalid Year!\n')
+                    print('\nError: Year not found!\n')
            
             week = self.Validate_Input('number', 'Which week? #[1-52, Leave blank for the current week]: ', 52)
             print()
             if week == "":
                 week = datetime.date.today().isocalendar()[1]
                 
-
             if week == datetime.date.today().isocalendar()[1] and year == str(datetime.date.today().isocalendar()[0]):
                 weather = self.Validate_Input('string', 'Would you like to see this week\'s weather? [y/n]: ', 52)
                 print()
@@ -519,12 +519,23 @@ class HolidayList:
                 holiday_list = self.filter_holidays_by_week(year, week)
                 self.displayHolidaysInWeek(holiday_list)
 
-            self.Main_Menu()
+            self.Main_Menu(save_status)
 
 
         else:
+            print("\nExit\n=====")
             if save_status == 0:
-                print()
+                message = 'Are you sure you want to exit?\nYour changes will be lost.\n[y/n]: '
+            else:
+                message = 'Are you sure you want to exit? [y/n]: '
+
+            choice = self.Validate_Input('string', message)
+
+            if choice == 'y':
+                print('\nGoodbye!\n')
+            else:
+                self.Main_Menu(save_status)
+                
 
 
 
@@ -553,20 +564,3 @@ def main():
 
 if __name__ == "__main__":
     main();
-
-
-# # Additional Hints:
-# # ---------------------------------------------
-# # You may need additional helper functions both in and out of the classes, add functions as you need to.
-# #
-# # No one function should be more then 50 lines of code, if you need more then 50 lines of code
-# # excluding comments, break the function into multiple functions.
-# #
-# # You can store your raw menu text, and other blocks of texts as raw text files 
-# # and use placeholder values with the format option.
-# # Example:
-# # In the file test.txt is "My name is {fname}, I'm {age}"
-# # Then you later can read the file into a string "filetxt"
-# # and substitute the placeholders 
-# # for example: filetxt.format(fname = "John", age = 36)
-# # This will make your code far more readable, by seperating text from code.
