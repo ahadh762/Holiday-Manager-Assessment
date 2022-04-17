@@ -6,22 +6,20 @@ import requests
 
 """
 Setup:
-    I got IP Banned from https://www.timeanddate.com/holidays/us so I have to use a Tor Proxy to access the website
+    I got IP-banned from https://www.timeanddate.com/holidays/us so I have to use a Tor Proxy to access the website
+
     Commands to install libraries:
 
     pip install requests[socks]
+
     if on MacOS:
         pip install "requests[socks]"
 
-    pip requests should be already installed
-    Install Tor Browser (Not sure if you actually need it or not)
+    Install Tor Browser: https://tb-manual.torproject.org/installation/
+
+    By default, Tor should use port 9050 for the localhost proxy. If errors occur, try changing to port 9150.
+
 """
-
-proxy = {
-    'http':  'socks5://localhost:9050',
-    'https': 'socks5://localhost:9050',
-}
-
 
 
 class Holiday:
@@ -38,6 +36,9 @@ class Holiday:
 
     def get_date(self):
         return self.__date
+
+    def get_year(self):
+        return str(self.__date.year)
 
     def __str__ (self):
         return f'{self.__holiday_name} ({self.__date})'
@@ -57,9 +58,11 @@ class HolidayList:
         else:
             self.innerHolidays.append(holidayObj)
             print(f"\nSuccess:\n{holidayObj} has been added to the holiday list.\n")
+
         # Make sure holidayObj is an Holiday Object by checking the type
         # Use innerHolidays.append(holidayObj) to add holiday
         # print to the user that you added a holiday
+
 
     def findHoliday(self, HolidayName, Date):
         found_holiday = None
@@ -94,7 +97,7 @@ class HolidayList:
                 self.addHoliday(holiday)
                 count += 1
             f.close()
-        print(f'{count} Holiday(s) loaded from file "{filelocation}"\n')
+        print(f'\n{count} Holiday(s) loaded from file "{filelocation}"\n')
             
         # Read in things from json file location
         # Use addHoliday function to add holidays to inner list.
@@ -121,7 +124,12 @@ class HolidayList:
          # Write out json file to selected file.
 
     def Scraped_Holiday_List(self, URL, year):
-            
+        
+        proxy = {
+            'http':  'socks5://localhost:9150',
+            'https': 'socks5://localhost:9150',
+        }
+
         try:
             html = requests.get(URL, proxies = proxy)
             html.raise_for_status()
@@ -150,7 +158,6 @@ class HolidayList:
                 date = date.getText().replace('.','')
                 date = date.replace('i','y')
                 date = date.replace('k','c')
-                date = date.replace('mrt','mar')
                 date = date.replace('mey','may')
                 date = date.replace('des','dec')
                 date = date.replace('ä','a')
@@ -170,6 +177,20 @@ class HolidayList:
                 date = date.replace('pac','oct')    
                 date = date.replace('lys','nov') 
                 date = date.replace('gru','dec')         
+                date = date.replace('Січ','jan')
+                date = date.replace('Лют', 'feb')
+                date = date.replace('Бер', 'mar')
+                date = date.replace('Кві', 'apr')
+                date = date.replace('Тра', 'may')
+                date = date.replace('Чер', 'jun')
+                date = date.replace('Лип', 'jul')
+                date = date.replace('fév','feb')
+                date = date.replace('avr', 'apr')
+                date = date.replace('juyn','jun')
+                date = date.replace('juyl','jul')
+                date = date.replace('aoû', 'aug')
+                date = date.replace('déc','dec')
+                date = date.replace('mrt','mar')
 
                 holiday_date = date+ f" {year}"
                 try:
@@ -225,7 +246,7 @@ class HolidayList:
 
     def filter_holidays_by_week(self, year, week_number):
         holidays = list(filter(lambda x: x.get_date().isocalendar()[1] == week_number \
-                and x.get_date().isocalendar()[0] == year, self.innerHolidays))
+                and x.get_year() == year, self.innerHolidays))
         
         return holidays
         
@@ -294,13 +315,15 @@ class HolidayList:
             response = requests.get(url, headers=headers, params=querystring).json()
 
             timestamp = time.strftime('%H:%M:%S')
-            time_list = ['24:00:00','03:00:00','06:00:00','09:00:00','12:00:00','15:00:00','18:00:00','21:00:00']
+            time_list = ['03:00:00','06:00:00','09:00:00','12:00:00','15:00:00','18:00:00','21:00:00','24:00:00']
             future_time_stamp = ""
             for i in range(len(time_list)):
                 if str(timestamp) <= time_list[i]:
                     future_timestamp = time_list[i]
-                elif future_timestamp == '24:00:00':
-                    future_time_stamp = '00:00:00'
+                    break
+
+            if future_timestamp == '24:00:00':
+                future_time_stamp = '00:00:00'
 
             weather_list = []
             date_list = []
@@ -313,6 +336,7 @@ class HolidayList:
                     weather = response['list'][i]['weather'][0]['description']
                     weather_list.append(weather)
 
+
         except KeyError as err:
 
             raise err
@@ -320,11 +344,14 @@ class HolidayList:
         return weather_list, date_list
 
         # Get Weather Forecast for Next 5 Days
-        # Each Day has 8 Forecasts, One for every 3 hours, so select the applicable forecast
+        # Each Day has 8 Forecasts, One for every 3 hours, so select the next applicable forecast based on current time
+        # Return list of weather descriptions and the list of their respective dates
+
 
     def getWeather(self):
         my_date = datetime.date.today()
         year, current_week, _ = my_date.isocalendar()
+        year = str(year)
         holidays = self.filter_holidays_by_week(year, current_week)      
 
         previous_days = 5
@@ -356,7 +383,7 @@ class HolidayList:
         # Query API for weather in that week range
         # Use the Datetime Module to look up current week and year
         # Get 5 previous weather forecasts and 5 future weather forecasts
-        # Store forecasts in dictionary with key Date and value forecast
+        # Store forecasts in dictionary with key = Date and value = weather description
         # Find the holidays in the week and use the dictionary to get their weather
         # Use Try / Except to catch problems
 
@@ -367,7 +394,10 @@ class HolidayList:
         while valid_value == False:
             if input_type == 'number':
                 try:
-                    user_input = int(input(message))
+                    user_input = input(message)
+                    if user_input == '' and range_of_values == 52:
+                        return user_input
+                    user_input = int(user_input)
                     if user_input < 1 or user_input > range_of_values:
                         print('\nError: Invalid Input!\n')
                     else:
@@ -384,7 +414,7 @@ class HolidayList:
                     print()
                     print("Error: Invalid input.\n")
 
-            elif input_type == 'date': # If input is date
+            else:
                 try:
                     date_text = input(message)
                     date_text = datetime.datetime.strptime(date_text, '%Y-%m-%d').date()
@@ -393,6 +423,10 @@ class HolidayList:
                     print("\nIncorrect data format, should be YYYY-MM-DD")
                     continue
 
+            
+
+        # Validates input based on input type
+        # If input is invalid, keeps prompting the user until a valid input is received
 
 
     def Main_Menu(self, save_status = 0):
@@ -405,7 +439,7 @@ class HolidayList:
         print()
 
         if menu_selection == 1:
-            print("Add a Holiday\n=============")
+            print("\nAdd a Holiday\n=============")
             holiday_exists = 'yes'
             while holiday_exists is not None:
                 holiday_name = input('Holiday: ')
@@ -420,7 +454,7 @@ class HolidayList:
             self.Main_Menu()
 
         elif menu_selection == 2:
-            print("Remove a Holiday\n================")
+            print("\nRemove a Holiday\n================")
             holiday_found = False
             holiday_removed = False
 
@@ -440,11 +474,54 @@ class HolidayList:
                 else:
                     self.removeHoliday(holiday_name,date)
                     holiday_removed = True
+            self.Main_Menu()
 
         elif menu_selection == 3:
-            self.save_to_json('updated_holidays')
-        elif menu_selection == 4:
+            print("\nSaving Holiday List\n====================")
+            save = self.Validate_Input("string","Are you sure you want to save your changes? [y/n]: ")
             print()
+
+            if save == 'y':
+                filename = input('Enter a filename (you do not need a file extension): ')
+                print()
+                self.save_to_json(filename)
+                print(f'\nSuccess:\nChanges saved to "{filename}.json"\n')
+
+            self.Main_Menu()
+
+        elif menu_selection == 4:
+            print("\nView Holidays\n=================")
+            year_found = False
+            while year_found == False:
+                year = input('Which Year?: ')
+                for i in range(len(self.innerHolidays)):
+                    if year == self.innerHolidays[i].get_year():
+                        year_found = True
+                        break
+                if year_found == False:
+                    print('\nError: Invalid Year!\n')
+           
+            week = self.Validate_Input('number', 'Which week? #[1-52, Leave blank for the current week]: ', 52)
+            print()
+            if week == "":
+                week = datetime.date.today().isocalendar()[1]
+                
+
+            if week == datetime.date.today().isocalendar()[1] and year == str(datetime.date.today().isocalendar()[0]):
+                weather = self.Validate_Input('string', 'Would you like to see this week\'s weather? [y/n]: ', 52)
+                print()
+                if weather == 'y':
+                    self.getWeather()
+                else:
+                    holiday_list = self.filter_holidays_by_week(year, week)
+                    self.displayHolidaysInWeek(holiday_list)
+            else:
+                holiday_list = self.filter_holidays_by_week(year, week)
+                self.displayHolidaysInWeek(holiday_list)
+
+            self.Main_Menu()
+
+
         else:
             if save_status == 0:
                 print()
