@@ -1,8 +1,8 @@
+import time
 import datetime
 import json
 from bs4 import BeautifulSoup
 import requests
-from dataclasses import dataclass
 
 
 # -------------------------------------------
@@ -196,10 +196,77 @@ class HolidayList:
         # Cast filter results as list
         # return your holidays
 
-#     def displayHolidaysInWeek(holidayList):
-#         # Use your filter_holidays_by_week to get list of holidays within a week as a parameter
-#         # Output formated holidays in the week. 
-#         # * Remember to use the holiday __str__ method.
+    @staticmethod
+    def displayHolidaysInWeek(holiday_list):
+        for i in range(len(holiday_list)):
+            print(holiday_list[i])
+            
+        # Use your filter_holidays_by_week to get list of holidays within a week as a parameter
+        # Output formated holidays in the week. 
+        # * Remember to use the holiday __str__ method.
+
+
+    @staticmethod
+    def Get_Previous_Weather_Data(days_ago):
+
+        url = "https://community-open-weather-map.p.rapidapi.com/onecall/timemachine"
+
+        today = datetime.datetime.today()
+        days_past = datetime.timedelta(days = days_ago)
+        date = today - days_past
+
+        timestamp = int(date.timestamp())
+
+        querystring = {"lat":"26.6406","lon":"-81.8723","dt":timestamp}
+
+        headers = {
+            "X-RapidAPI-Host": "community-open-weather-map.p.rapidapi.com",
+            "X-RapidAPI-Key": "a2ba6e432emshba867077d11af9ap1a0278jsnc4e59674ffb8"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring).json()
+
+        unix_timestamp = int(response['current']['dt'])
+
+        day = datetime.datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d')
+        weather = response["current"]['weather'][0]['description']
+
+        return day, weather
+
+
+    @staticmethod
+    def Get_Forecasted_Weather_Data():
+        url = "https://community-open-weather-map.p.rapidapi.com/forecast/"
+
+        querystring = {"q":"Fort Myers,us",}
+
+        headers = {
+            "X-RapidAPI-Host": "community-open-weather-map.p.rapidapi.com",
+            "X-RapidAPI-Key": "a2ba6e432emshba867077d11af9ap1a0278jsnc4e59674ffb8"
+        }
+
+        response = requests.get(url, headers=headers, params=querystring).json()
+        timestamp = time.strftime('%H:%M:%S')
+        time_list = ['24:00:00','03:00:00','06:00:00','09:00:00','12:00:00','15:00:00','18:00:00','21:00:00']
+
+        for i in range(len(time_list)):
+            if str(timestamp) <= time_list[i]:
+                future_timestamp = time_list[i]
+            elif future_timestamp == '24:00:00':
+                future_time_stamp = '00:00:00'
+
+        weather_list = []
+        date_list = []
+
+        for i in range(len(response['list'])):
+            if future_time_stamp in response['list'][i]['dt_txt']:
+                date = response['list'][i]['dt_txt']
+                date = date.replace(f' {future_time_stamp}', '')
+                date_list.append(date)
+                weather = response['list'][i]['weather'][0]['description']
+                weather_list.append(weather)
+
+        return weather_list, date_list
 
 #     def getWeather(weekNum):
 #         # Convert weekNum to range between two days
