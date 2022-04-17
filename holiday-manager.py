@@ -423,10 +423,92 @@ class HolidayList:
                     print("\nIncorrect Date Format, should be YYYY-MM-DD")
                     continue
 
-            
-
         # Validates input based on input type
         # If input is invalid, keeps prompting the user until a valid input is received
+
+    def View_Holidays(self, save_status):
+
+        print("\nView Holidays\n=================")
+        year_found = False
+        while year_found == False:
+            year = input('Which Year?: ')
+            for i in range(len(self.innerHolidays)):
+                if year == self.innerHolidays[i].get_year():
+                    year_found = True
+                    break
+            if year_found == False:
+                print('\nError: Year not found!\n')
+        
+        week = self.Validate_Input('number', 'Which week? #[1-52, Leave blank for the current week]: ', 52)
+        print()
+        if week == "":
+            week = datetime.date.today().isocalendar()[1]
+            
+        if week == datetime.date.today().isocalendar()[1] and year == str(datetime.date.today().isocalendar()[0]):
+            weather = self.Validate_Input('string', 'Would you like to see this week\'s weather? [y/n]: ', 52)
+            print()
+            if weather == 'y':
+                self.getWeather()
+            else:
+                holiday_list = self.filter_holidays_by_week(year, week)
+                self.displayHolidaysInWeek(holiday_list)
+        else:
+            holiday_list = self.filter_holidays_by_week(year, week)
+            self.displayHolidaysInWeek(holiday_list)
+
+        self.Main_Menu(save_status)       
+
+        # Displays holidays based on user input data (Year and Week)
+        # For current year and current week, prompt to show weather
+
+    def User_Add_Holiday(self):
+
+        print("\nAdd a Holiday\n=============")
+        holiday_exists = 'yes'
+        while holiday_exists is not None:
+            holiday_name = input('Holiday: ')
+            date = HolidayList.Validate_Input('date', 'Date (YYYY-MM-DD): ')
+            print()
+            holiday_exists = self.findHoliday(holiday_name, date)
+            if holiday_exists is None:
+                holiday_obj = Holiday(holiday_name, date)
+                self.addHoliday(holiday_obj)
+            else:
+                print("Error: Holiday already in list!\n")
+
+        self.Main_Menu()
+
+        # Adds holidays based on user input (year string and holiday name)
+        # Checks if holiday is already in holiday_list
+
+
+    def User_Remove_Holiday(self):
+
+        print("\nRemove a Holiday\n================")
+        holiday_found = False
+        holiday_removed = False
+
+        while holiday_found == False:
+            holiday_name = input('Holiday: ')
+            for i in range(len(self.innerHolidays)):
+                if holiday_name.lower() == self.innerHolidays[i].get_name().lower():
+                    holiday_found = True
+            if holiday_found == False:
+                print(f"\nError:\nHoliday {holiday_name} not found!\n")
+        
+        while holiday_removed == False:
+            date = HolidayList.Validate_Input('date', f'Date for {holiday_name} (YYYY-MM-DD): ')
+            holiday = self.findHoliday(holiday_name, date)
+            if holiday is None:
+                print(f"\nError:\n{holiday_name} not found.\n")
+            else:
+                self.removeHoliday(holiday_name,date)
+                holiday_removed = True
+
+        self.Main_Menu()
+
+        # Adds holidays based on user input (year string and holiday name)
+        # Checks if holiday is in holiday_list before removing it
 
 
     def Main_Menu(self, save_status = 0):
@@ -439,44 +521,12 @@ class HolidayList:
         print()
 
         if menu_selection == 1:
-            print("\nAdd a Holiday\n=============")
-            holiday_exists = 'yes'
-            while holiday_exists is not None:
-                holiday_name = input('Holiday: ')
-                date = HolidayList.Validate_Input('date', 'Date (YYYY-MM-DD): ')
-                print()
-                holiday_exists = self.findHoliday(holiday_name, date)
-                if holiday_exists is None:
-                    holiday_obj = Holiday(holiday_name, date)
-                    self.addHoliday(holiday_obj)
-                else:
-                    print("Error: Holiday already in list!\n")
-            self.Main_Menu()
+            self.User_Add_Holiday()
 
         elif menu_selection == 2:
-            print("\nRemove a Holiday\n================")
-            holiday_found = False
-            holiday_removed = False
+            self.User_Remove_Holiday()
 
-            while holiday_found == False:
-                holiday_name = input('Holiday: ')
-                for i in range(len(self.innerHolidays)):
-                    if holiday_name.lower() == self.innerHolidays[i].get_name().lower():
-                        holiday_found = True
-                if holiday_found == False:
-                    print(f"\nError:\nHoliday {holiday_name} not found!\n")
-            
-            while holiday_removed == False:
-                date = HolidayList.Validate_Input('date', f'Date for {holiday_name} (YYYY-MM-DD): ')
-                holiday = self.findHoliday(holiday_name, date)
-                if holiday is None:
-                    print(f"\nError:\n{holiday_name} not found.\n")
-                else:
-                    self.removeHoliday(holiday_name,date)
-                    holiday_removed = True
-            self.Main_Menu()
-
-        elif menu_selection == 3:
+        elif menu_selection == 3:  # If user wishes to save changes
             print("\nSaving Holiday List\n====================")
             save = self.Validate_Input("string","Are you sure you want to save your changes? [y/n]: ")
             print()
@@ -491,38 +541,10 @@ class HolidayList:
             self.Main_Menu(save_status)
 
         elif menu_selection == 4:
-            print("\nView Holidays\n=================")
-            year_found = False
-            while year_found == False:
-                year = input('Which Year?: ')
-                for i in range(len(self.innerHolidays)):
-                    if year == self.innerHolidays[i].get_year():
-                        year_found = True
-                        break
-                if year_found == False:
-                    print('\nError: Year not found!\n')
-           
-            week = self.Validate_Input('number', 'Which week? #[1-52, Leave blank for the current week]: ', 52)
-            print()
-            if week == "":
-                week = datetime.date.today().isocalendar()[1]
-                
-            if week == datetime.date.today().isocalendar()[1] and year == str(datetime.date.today().isocalendar()[0]):
-                weather = self.Validate_Input('string', 'Would you like to see this week\'s weather? [y/n]: ', 52)
-                print()
-                if weather == 'y':
-                    self.getWeather()
-                else:
-                    holiday_list = self.filter_holidays_by_week(year, week)
-                    self.displayHolidaysInWeek(holiday_list)
-            else:
-                holiday_list = self.filter_holidays_by_week(year, week)
-                self.displayHolidaysInWeek(holiday_list)
 
-            self.Main_Menu(save_status)
+            self.View_Holidays(save_status)
 
-
-        else:
+        else:  # If player wishes to exit program
             print("\nExit\n=====")
             if save_status == 0:
                 message = 'Are you sure you want to exit?\nYour changes will be lost.\n[y/n]: '
@@ -536,8 +558,8 @@ class HolidayList:
             else:
                 self.Main_Menu(save_status)
                 
-
-
+        # Main Menu displays menu options and prompts user for an int input
+        # Once input is received, menu runs appropriate method and, if necessary, calls helper functions
 
 def main():
 
@@ -548,19 +570,15 @@ def main():
     print(f"There are {holiday_manager.numHolidays()} holidays stored in the system.\n")
     holiday_manager.Main_Menu()
 
-
-
-#     # Large Pseudo Code steps
-#     # -------------------------------------
-#     # 1. Initialize HolidayList Object
-#     # 2. Load JSON file via HolidayList read_json function
-#     # 3. Scrape additional holidays using your HolidayList scrapeHolidays function.
-#     # 3. Create while loop for user to keep adding or working with the Calender
-#     # 4. Display User Menu (Print the menu)
-#     # 5. Take user input for their action based on Menu and check the user input for errors
-#     # 6. Run appropriate method from the HolidayList object depending on what the user input is
-#     # 7. Ask the User if they would like to Continue, if not, end the while loop, ending the program.  If they do wish to continue, keep the program going. 
+    # Main method
+    # Instantiates class holiday_manager and initializes empty holiday list
+    # Seeds holiday_list with holidays from holidays.json file
+    # Scrapes usholidays.com website for holidays in the year range 2020-2024
+    # Prints number of preloaded holidays 
+    # Calls Main_Menu() function
 
 
 if __name__ == "__main__":
     main();
+
+# Calls main method
