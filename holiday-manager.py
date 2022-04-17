@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import requests
 
 
+
 class Holiday:
     def __init__(self,holiday_name,date):
         self.__holiday_name = holiday_name
@@ -50,7 +51,7 @@ class HolidayList:
     def findHoliday(self, HolidayName, Date):
         found_holiday = None
         for holiday in self.innerHolidays:
-            if HolidayName.lower() == holiday.get_name().lower() and Date == holiday.get_date():
+            if HolidayName == holiday.get_name() and Date == holiday.get_date():
                 found_holiday = holiday
         return found_holiday
 
@@ -108,6 +109,7 @@ class HolidayList:
 
     def Scraped_Holiday_List(self, URL, year):
         
+
         try:
             html = requests.get(URL)
             html.raise_for_status()
@@ -133,12 +135,9 @@ class HolidayList:
                 date = holiday.find_previous().find_previous().find_previous()
 
                 holiday_date = date+ f" {year}"
-                try:
-                    format = "%b %d %Y"
-                    holiday_date = datetime.datetime.strptime(holiday_date, format).date()
-                except:
-                    format = '%d %b %Y'
-                    holiday_date = datetime.datetime.strptime(holiday_date, format).date()
+
+                format = '%d %b %Y'
+                holiday_date = datetime.datetime.strptime(holiday_date, format).date()
 
                 # Add Non-Duplicates to Inner List
                 find_holiday = self.findHoliday(holiday_name, holiday_date)
@@ -222,7 +221,7 @@ class HolidayList:
 
         headers = {
             "X-RapidAPI-Host": "community-open-weather-map.p.rapidapi.com",
-            "X-RapidAPI-Key": "a2ba6e432emshba867077d11af9ap1a0278jsnc4e59674ffb8"
+            "X-RapidAPI-Key": "dfc18e7a71msh5e27f983bb80158p1928a7jsn83eefa04387f"
         }
 
         try:
@@ -249,7 +248,7 @@ class HolidayList:
 
             headers = {
                 "X-RapidAPI-Host": "community-open-weather-map.p.rapidapi.com",
-                "X-RapidAPI-Key": "a2ba6e432emshba867077d11af9ap1a0278jsnc4e59674ffb8"
+                "X-RapidAPI-Key": "dfc18e7a71msh5e27f983bb80158p1928a7jsn83eefa04387f"
             }
 
             response = requests.get(url, headers=headers, params=querystring).json()
@@ -379,13 +378,13 @@ class HolidayList:
             if year_found == False:
                 print('\nError: Year not found!\n')
         
-        week = self.Validate_Input('number', 'Which week? #[1-52, Leave blank for the current week]: ', 52)
+        week = HolidayList.Validate_Input('number', 'Which week? #[1-52, Leave blank for the current week]: ', 52)
         print()
         if week == "":
             week = datetime.date.today().isocalendar()[1]
             
         if week == datetime.date.today().isocalendar()[1] and year == str(datetime.date.today().isocalendar()[0]):
-            weather = self.Validate_Input('string', 'Would you like to see this week\'s weather? [y/n]: ', 52)
+            weather = HolidayList.Validate_Input('string', 'Would you like to see this week\'s weather? [y/n]: ', 52)
             print()
             if weather == 'y':
                 self.getWeather()
@@ -468,7 +467,7 @@ class HolidayList:
 
         elif menu_selection == 3:  # If user wishes to save changes
             print("\nSaving Holiday List\n====================")
-            save = self.Validate_Input("string","Are you sure you want to save your changes? [y/n]: ")
+            save = HolidayList.Validate_Input("string","Are you sure you want to save your changes? [y/n]: ")
             print()
 
             if save == 'y':
@@ -491,11 +490,12 @@ class HolidayList:
             else:
                 message = 'Are you sure you want to exit? [y/n]: '
 
-            choice = self.Validate_Input('string', message)
+            choice = HolidayList.Validate_Input('string', message)
 
             if choice == 'y':
                 print('\nGoodbye!\n')
             else:
+                print()
                 self.Main_Menu(save_status)
                 
         # Main Menu displays menu options and prompts user for an int input
