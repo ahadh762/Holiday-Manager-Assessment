@@ -4,6 +4,20 @@ import json
 from bs4 import BeautifulSoup
 import requests
 
+"""
+Setup:
+    pip install requests[socks]
+    if on MacOS:
+        pip install "requests[socks]"
+    These should be already installed
+"""
+
+proxy = {
+    'http':  'socks5://localhost:9050',
+    'https': 'socks5://localhost:9050',
+}
+
+
 
 class Holiday:
     def __init__(self,holiday_name,date):
@@ -107,7 +121,7 @@ class HolidayList:
     def Scraped_Holiday_List(self, URL, year):
             
         try:
-            html = requests.get(URL)
+            html = requests.get(URL, proxies = proxy)
             html.raise_for_status()
             html = html.text
         except requests.exceptions.HTTPError as err:
@@ -129,8 +143,15 @@ class HolidayList:
 
                 # Date is contained in text in the tag that is 3 tags prior to the href tag
                 date = holiday.find_previous().find_previous().find_previous()
-                holiday_date = date.getText() + f" {year}"
-                format = '%b %d %Y'
+                # Fix encoding errors (consequence of using Tor Browser)
+                date = date.getText().replace('.','')
+                date = date.replace('i','y')
+                date = date.replace('k','c')
+                date = date.replace('des','dec')
+                date = date.replace('ä','a')
+                date = date.replace('z','c')
+                holiday_date = date + f" {year}"
+                format = '%d %b %Y'
                 holiday_date = datetime.datetime.strptime(holiday_date, format).date()
 
                 # Add Non-Duplicates to Inner List
@@ -322,21 +343,6 @@ print(num)
 holidays = test.filter_holidays_by_week(2022,15)
 HolidayList.displayHolidaysInWeek(holidays)
 test.getWeather()
-
-
-#     def getWeather(weekNum):
-#         # Convert weekNum to range between two days
-#         # Use Try / Except to catch problems
-#         # Query API for weather in that week range
-#         # Format weather information and return weather string.
-
-#     def viewCurrentWeek():
-#         # Use the Datetime Module to look up current week and year
-#         # Use your filter_holidays_by_week function to get the list of holidays 
-#         # for the current week/year
-#         # Use your displayHolidaysInWeek function to display the holidays in the week
-#         # Ask user if they want to get the weather
-#         # If yes, use your getWeather function and display results
 
 
 
