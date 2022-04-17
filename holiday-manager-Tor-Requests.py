@@ -4,6 +4,23 @@ import json
 from bs4 import BeautifulSoup
 import requests
 
+"""
+Setup:
+    I got IP-banned from https://www.timeanddate.com/holidays/us so I have to use a Tor Proxy to access the website
+
+    Commands to install libraries:
+
+    pip install requests[socks]
+
+    if on MacOS:
+        pip install "requests[socks]"
+
+    Install Tor Browser: https://tb-manual.torproject.org/installation/
+
+    By default, Tor should use port 9050 for the localhost proxy. If errors occur, try changing to port 9150.
+
+"""
+
 
 class Holiday:
     def __init__(self,holiday_name,date):
@@ -108,8 +125,13 @@ class HolidayList:
 
     def Scraped_Holiday_List(self, URL, year):
         
+        proxy = {
+            'http':  'socks5://localhost:9150',
+            'https': 'socks5://localhost:9150',
+        }
+
         try:
-            html = requests.get(URL)
+            html = requests.get(URL, proxies = proxy)
             html.raise_for_status()
             html = html.text
         except requests.exceptions.HTTPError as err:
@@ -131,6 +153,44 @@ class HolidayList:
 
                 # Date is contained in text in the tag that is 3 tags prior to the href tag
                 date = holiday.find_previous().find_previous().find_previous()
+
+                # Fix encoding errors (consequence of using Tor Browser)
+                date = date.getText().replace('.','')
+                date = date.replace('i','y')
+                date = date.replace('k','c')
+                date = date.replace('mey','may')
+                date = date.replace('des','dec')
+                date = date.replace('ä','a')
+                date = date.replace('z','c')
+                date = date.replace('yan','jan')
+                date = date.replace('yun','jun')
+                date = date.replace('yul','jul')
+                date = date.replace('noy','nov')
+                date = date.replace('sty','jan')
+                date = date.replace('lut','feb')
+                date = date.replace('cwy','apr')
+                date = date.replace('maj','may')
+                date = date.replace('cce','jun')   
+                date = date.replace('lyp','jul')        
+                date = date.replace('sye','aug')
+                date = date.replace('wrc','sep')
+                date = date.replace('pac','oct')    
+                date = date.replace('lys','nov') 
+                date = date.replace('gru','dec')         
+                date = date.replace('Січ','jan')
+                date = date.replace('Лют', 'feb')
+                date = date.replace('Бер', 'mar')
+                date = date.replace('Кві', 'apr')
+                date = date.replace('Тра', 'may')
+                date = date.replace('Чер', 'jun')
+                date = date.replace('Лип', 'jul')
+                date = date.replace('fév','feb')
+                date = date.replace('avr', 'apr')
+                date = date.replace('juyn','jun')
+                date = date.replace('juyl','jul')
+                date = date.replace('aoû', 'aug')
+                date = date.replace('déc','dec')
+                date = date.replace('mrt','mar')
 
                 holiday_date = date+ f" {year}"
                 try:
