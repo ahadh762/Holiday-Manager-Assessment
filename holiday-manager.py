@@ -23,6 +23,7 @@ proxy = {
 }
 
 
+
 class Holiday:
     def __init__(self,holiday_name,date):
         self.__holiday_name = holiday_name
@@ -55,7 +56,7 @@ class HolidayList:
             raise TypeError("\nHoliday must be a Holiday Object!\n")
         else:
             self.innerHolidays.append(holidayObj)
-            print(f"Success:\n{holidayObj} has been added to the holiday list.\n")
+            print(f"\nSuccess:\n{holidayObj} has been added to the holiday list.\n")
         # Make sure holidayObj is an Holiday Object by checking the type
         # Use innerHolidays.append(holidayObj) to add holiday
         # print to the user that you added a holiday
@@ -63,7 +64,7 @@ class HolidayList:
     def findHoliday(self, HolidayName, Date):
         found_holiday = None
         for holiday in self.innerHolidays:
-            if HolidayName == holiday.get_name() and Date == holiday.get_date():
+            if HolidayName.lower() == holiday.get_name().lower() and Date == holiday.get_date():
                 found_holiday = holiday
         return found_holiday
 
@@ -73,11 +74,8 @@ class HolidayList:
 
     def removeHoliday(self, HolidayName, Date):
         holiday = self.findHoliday(HolidayName, Date)
-        if holiday is None:
-            print(f"Error:\n{HolidayName} not found.\n")
-        else:
-            self.innerHolidays.remove(holiday)
-            print(f"Success:\n{HolidayName} has been removed from the holiday list.\n")
+        self.innerHolidays.remove(holiday)
+        print(f"\nSuccess:\n{HolidayName} has been removed from the holiday list.\n")
             
         # Find Holiday in innerHolidays by searching the name and date combination.
         # remove the Holiday from innerHolidays
@@ -147,7 +145,7 @@ class HolidayList:
 
                 # Date is contained in text in the tag that is 3 tags prior to the href tag
                 date = holiday.find_previous().find_previous().find_previous()
-                
+
                 # Fix encoding errors (consequence of using Tor Browser)
                 date = date.getText().replace('.','')
                 date = date.replace('i','y')
@@ -168,11 +166,18 @@ class HolidayList:
                 date = date.replace('cce','jun')   
                 date = date.replace('lyp','jul')        
                 date = date.replace('sye','aug')
-                date = date.replace('wrc','sept')         
+                date = date.replace('wrc','sep')
+                date = date.replace('pac','oct')    
+                date = date.replace('lys','nov') 
+                date = date.replace('gru','dec')         
 
-                holiday_date = date + f" {year}"
-                format = '%d %b %Y'
-                holiday_date = datetime.datetime.strptime(holiday_date, format).date()
+                holiday_date = date+ f" {year}"
+                try:
+                    format = "%b %d %Y"
+                    holiday_date = datetime.datetime.strptime(holiday_date, format).date()
+                except:
+                    format = '%d %b %Y'
+                    holiday_date = datetime.datetime.strptime(holiday_date, format).date()
 
                 # Add Non-Duplicates to Inner List
                 find_holiday = self.findHoliday(holiday_name, holiday_date)
@@ -272,7 +277,7 @@ class HolidayList:
         
         return day, weather
 
-
+        # Get Weather from a Previous Day, up to 5 Days in the Past
 
     @staticmethod
     def Get_Forecasted_Weather_Data():
@@ -311,9 +316,11 @@ class HolidayList:
         except KeyError as err:
 
             raise err
-
+    
         return weather_list, date_list
 
+        # Get Weather Forecast for Next 5 Days
+        # Each Day has 8 Forecasts, One for every 3 hours, so select the applicable forecast
 
     def getWeather(self):
         my_date = datetime.date.today()
@@ -344,16 +351,15 @@ class HolidayList:
                 print(f"{holidays[i]} - Weather Data not found")
         print()
 
-        # Convert weekNum to range between two days
-        # Use Try / Except to catch problems
-        # Query API for weather in that week range
-        # Format weather information
-        # Use the Datetime Module to look up current week and year
-        # Use your filter_holidays_by_week function to get the list of holidays 
-        # for the current week/year
-        # Use your displayHolidaysInWeek function to display the holidays in the week
         # Ask user if they want to get the weather
         # If yes, use your getWeather function and display results
+        # Query API for weather in that week range
+        # Use the Datetime Module to look up current week and year
+        # Get 5 previous weather forecasts and 5 future weather forecasts
+        # Store forecasts in dictionary with key Date and value forecast
+        # Find the holidays in the week and use the dictionary to get their weather
+        # Use Try / Except to catch problems
+
 
     @staticmethod
     def Validate_Input(input_type, message, range_of_values = 1):
@@ -363,16 +369,14 @@ class HolidayList:
                 try:
                     user_input = int(input(message))
                     if user_input < 1 or user_input > range_of_values:
-                        print()
-                        print('Error: Invalid Input!\n')
+                        print('\nError: Invalid Input!\n')
                     else:
                         return user_input
                 except ValueError:
-                    print()
-                    print("Error: ValueError. Input must be numeric!\n")
+                    print("\nError: Input must be numeric!\n")
                     continue
 
-            if input_type == 'string':
+            elif input_type == 'string':
                 user_input = input(message).lower()
                 if user_input == 'y' or user_input == 'n':
                     return user_input
@@ -380,41 +384,81 @@ class HolidayList:
                     print()
                     print("Error: Invalid input.\n")
 
-            else: # If input is date
-                date_txt
+            elif input_type == 'date': # If input is date
+                try:
+                    date_text = input(message)
+                    date_text = datetime.datetime.strptime(date_text, '%Y-%m-%d').date()
+                    return date_text
+                except ValueError:
+                    print("\nIncorrect data format, should be YYYY-MM-DD")
+                    continue
 
 
-    def Main_Menu(self):
+
+    def Main_Menu(self, save_status = 0):
+
         print()
         print("Participant Menu\n================")
         print("1. Add a Holiday\n2. Remove a Holiday\n3. Save Holiday List\n4. View Holidays\n5. Exit\n")
         menu_message = ("Select an option to continue: ")
-        menu_selection = HolidayList.Validate_Input(menu_message, 'number', 5)
+        menu_selection = HolidayList.Validate_Input('number', menu_message, 5)
         print()
 
         if menu_selection == 1:
             print("Add a Holiday\n=============")
-            holiday_name = input('Holiday: ')
-            date = HolidayList.Validate_Input('date','')
+            holiday_exists = 'yes'
+            while holiday_exists is not None:
+                holiday_name = input('Holiday: ')
+                date = HolidayList.Validate_Input('date', 'Date (YYYY-MM-DD): ')
+                print()
+                holiday_exists = self.findHoliday(holiday_name, date)
+                if holiday_exists is None:
+                    holiday_obj = Holiday(holiday_name, date)
+                    self.addHoliday(holiday_obj)
+                else:
+                    print("Error: Holiday already in list!\n")
+            self.Main_Menu()
 
         elif menu_selection == 2:
-            Cancel_Sign_Up()
+            print("Remove a Holiday\n================")
+            holiday_found = False
+            holiday_removed = False
+
+            while holiday_found == False:
+                holiday_name = input('Holiday: ')
+                for i in range(len(self.innerHolidays)):
+                    if holiday_name.lower() == self.innerHolidays[i].get_name().lower():
+                        holiday_found = True
+                if holiday_found == False:
+                    print(f"\nError:\nHoliday {holiday_name} not found!\n")
+            
+            while holiday_removed == False:
+                date = HolidayList.Validate_Input('date', f'Date for {holiday_name} (YYYY-MM-DD): ')
+                holiday = self.findHoliday(holiday_name, date)
+                if holiday is None:
+                    print(f"\nError:\n{holiday_name} not found.\n")
+                else:
+                    self.removeHoliday(holiday_name,date)
+                    holiday_removed = True
+
         elif menu_selection == 3:
-            View_Participants()
+            self.save_to_json('updated_holidays')
         elif menu_selection == 4:
-            Save_Changes()
+            print()
         else:
-            Exit()
+            if save_status == 0:
+                print()
 
 
 
 def main():
+
     holiday_manager = HolidayList()
     holiday_manager.read_json('holidays.json')
     holiday_manager.scrapeHolidays()
     print("\nHoliday Management\n===================")
     print(f"There are {holiday_manager.numHolidays()} holidays stored in the system.\n")
-
+    holiday_manager.Main_Menu()
 
 
 
