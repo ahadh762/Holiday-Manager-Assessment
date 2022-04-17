@@ -6,17 +6,21 @@ import requests
 
 """
 Setup:
+    I got IP Banned from https://www.timeanddate.com/holidays/us so I have to use a Tor Proxy to access the website
+    Commands to install libraries:
+
     pip install requests[socks]
     if on MacOS:
         pip install "requests[socks]"
-    These should be already installed
+
+    pip requests should be already installed
+    Install Tor Browser (Not sure if you actually need it or not)
 """
 
 proxy = {
     'http':  'socks5://localhost:9050',
     'https': 'socks5://localhost:9050',
 }
-
 
 
 class Holiday:
@@ -143,13 +147,29 @@ class HolidayList:
 
                 # Date is contained in text in the tag that is 3 tags prior to the href tag
                 date = holiday.find_previous().find_previous().find_previous()
+                
                 # Fix encoding errors (consequence of using Tor Browser)
                 date = date.getText().replace('.','')
                 date = date.replace('i','y')
                 date = date.replace('k','c')
+                date = date.replace('mrt','mar')
+                date = date.replace('mey','may')
                 date = date.replace('des','dec')
                 date = date.replace('ä','a')
                 date = date.replace('z','c')
+                date = date.replace('yan','jan')
+                date = date.replace('yun','jun')
+                date = date.replace('yul','jul')
+                date = date.replace('noy','nov')
+                date = date.replace('sty','jan')
+                date = date.replace('lut','feb')
+                date = date.replace('cwy','apr')
+                date = date.replace('maj','may')
+                date = date.replace('cce','jun')   
+                date = date.replace('lyp','jul')        
+                date = date.replace('sye','aug')
+                date = date.replace('wrc','sept')         
+
                 holiday_date = date + f" {year}"
                 format = '%d %b %Y'
                 holiday_date = datetime.datetime.strptime(holiday_date, format).date()
@@ -192,9 +212,11 @@ class HolidayList:
         # Add non-duplicates to innerHolidays
         # Handle any exceptions.
         
+
     def numHolidays(self):
         return len(self.innerHolidays)
         # Return the total number of holidays in innerHolidays
+
 
     def filter_holidays_by_week(self, year, week_number):
         holidays = list(filter(lambda x: x.get_date().isocalendar()[1] == week_number \
@@ -333,20 +355,69 @@ class HolidayList:
         # Ask user if they want to get the weather
         # If yes, use your getWeather function and display results
 
-        
-test = HolidayList()
-test.read_json('holidays.json')
-test.scrapeHolidays()
-test.save_to_json('sample')
-num = test.numHolidays()
-print(num)
-holidays = test.filter_holidays_by_week(2022,15)
-HolidayList.displayHolidaysInWeek(holidays)
-test.getWeather()
+    @staticmethod
+    def Validate_Input(input_type, message, range_of_values = 1):
+        valid_value = False
+        while valid_value == False:
+            if input_type == 'number':
+                try:
+                    user_input = int(input(message))
+                    if user_input < 1 or user_input > range_of_values:
+                        print()
+                        print('Error: Invalid Input!\n')
+                    else:
+                        return user_input
+                except ValueError:
+                    print()
+                    print("Error: ValueError. Input must be numeric!\n")
+                    continue
+
+            if input_type == 'string':
+                user_input = input(message).lower()
+                if user_input == 'y' or user_input == 'n':
+                    return user_input
+                else:
+                    print()
+                    print("Error: Invalid input.\n")
+
+            else: # If input is date
+                date_txt
+
+
+    def Main_Menu(self):
+        print()
+        print("Participant Menu\n================")
+        print("1. Add a Holiday\n2. Remove a Holiday\n3. Save Holiday List\n4. View Holidays\n5. Exit\n")
+        menu_message = ("Select an option to continue: ")
+        menu_selection = HolidayList.Validate_Input(menu_message, 'number', 5)
+        print()
+
+        if menu_selection == 1:
+            print("Add a Holiday\n=============")
+            holiday_name = input('Holiday: ')
+            date = HolidayList.Validate_Input('date','')
+
+        elif menu_selection == 2:
+            Cancel_Sign_Up()
+        elif menu_selection == 3:
+            View_Participants()
+        elif menu_selection == 4:
+            Save_Changes()
+        else:
+            Exit()
 
 
 
-# def main():
+def main():
+    holiday_manager = HolidayList()
+    holiday_manager.read_json('holidays.json')
+    holiday_manager.scrapeHolidays()
+    print("\nHoliday Management\n===================")
+    print(f"There are {holiday_manager.numHolidays()} holidays stored in the system.\n")
+
+
+
+
 #     # Large Pseudo Code steps
 #     # -------------------------------------
 #     # 1. Initialize HolidayList Object
@@ -359,8 +430,8 @@ test.getWeather()
 #     # 7. Ask the User if they would like to Continue, if not, end the while loop, ending the program.  If they do wish to continue, keep the program going. 
 
 
-# if __name__ == "__main__":
-#     main();
+if __name__ == "__main__":
+    main();
 
 
 # # Additional Hints:
