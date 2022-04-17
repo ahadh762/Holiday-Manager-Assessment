@@ -115,6 +115,7 @@ class HolidayList:
             html = requests.get(URL)
             html.raise_for_status()
             html = requests.get(URL).text
+
         except requests.exceptions.HTTPError as err:
             print(err)
 
@@ -149,6 +150,7 @@ class HolidayList:
                     # Instantiate Holiday Objects and Add them to List of Objects
                     holidayObj = Holiday(holiday_name, holiday_date)
                     self.addHoliday(holidayObj)
+                
 
                 
     def scrapeHolidays(self):
