@@ -15,7 +15,7 @@
 * [holiday-manager.py - USE THIS FILE](https://github.com/ahadh762/Holiday-Manager-Assessment/blob/master/holiday-manager.py):
     * Contains Python script 
 
-* [holiday-manager-Torr-Requests.py](https://github.com/ahadh762/Holiday-Manager-Assessment/blob/master/holiday-manager-Tor-Requests.py)
+* [holiday-manager-Tor-Requests.py](https://github.com/ahadh762/Holiday-Manager-Assessment/blob/master/holiday-manager-Tor-Requests.py)
     * Because I was IP banned for webscraping [US Holidays 2022](https://www.timeanddate.com/holidays), I used HTTP proxies to make HTTP requests through the [Tor Browser](https://www.torproject.org)
     * Though it is not recommended for use, I included it just to show what I used to get the project up and running
 
