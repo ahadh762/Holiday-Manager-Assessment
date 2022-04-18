@@ -126,8 +126,8 @@ class HolidayList:
     def Scraped_Holiday_List(self, URL, year):
         
         proxy = {
-            'http':  'socks5://localhost:9050',
-            'https': 'socks5://localhost:9050',
+            'http':  'socks5://localhost:9150',
+            'https': 'socks5://localhost:9150',
         }
 
         try:
