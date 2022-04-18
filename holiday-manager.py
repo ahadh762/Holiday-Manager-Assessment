@@ -136,7 +136,7 @@ class HolidayList:
 
                 holiday_date = date + f" {year}"
 
-                format = '%d %b %Y'
+                format = '%b %d %Y'
                 holiday_date = datetime.datetime.strptime(holiday_date, format).date()
 
                 # Add Non-Duplicates to Inner List
@@ -430,7 +430,7 @@ class HolidayList:
         while holiday_found == False:
             holiday_name = input('Holiday: ')
             for i in range(len(self.innerHolidays)):
-                if holiday_name.lower() == self.innerHolidays[i].get_name().lower():
+                if holiday_name == self.innerHolidays[i].get_name():
                     holiday_found = True
             if holiday_found == False:
                 print(f"\nError:\nHoliday {holiday_name} not found!\n")
