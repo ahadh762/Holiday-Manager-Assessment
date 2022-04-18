@@ -30,8 +30,8 @@
   * The 'current' timestamp is a Unix timestamp and corresponds to Tue Apr 12 2022 15:00:00 GMT-0400 (EDT)
  
 * [forecast_weather_sample.json](https://github.com/ahadh762/Holiday-Manager-Assessment/blob/master/Weather%20Samples/forecast_weather_sample.json)
-  * JSON file containing sample output for [Open Weather Map API](https://rapidapi.com/community/api/open-weather-map/) Query for a forecast of the next 5 days
-  * File contains forecasts for every 3 hours starting from "2022-04-18 00:00:00"
+  * JSON file containing sample output for [Open Weather Map API](https://rapidapi.com/community/api/open-weather-map/) Query for a forecast of the next 7 days
+  * File contains forecasts for next 7 days starting from unix timestamp 1650301200 or "Mon Apr 18 2022 13:00:00 GMT-0400 (EDT)"
 
 
    
