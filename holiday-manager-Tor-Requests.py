@@ -491,7 +491,7 @@ class HolidayList:
         while holiday_found == False:
             holiday_name = input('Holiday: ')
             for i in range(len(self.innerHolidays)):
-                if holiday_name.lower() == self.innerHolidays[i].get_name().lower():
+                if holiday_name == self.innerHolidays[i].get_name():
                     holiday_found = True
             if holiday_found == False:
                 print(f"\nError:\nHoliday {holiday_name} not found!\n")
