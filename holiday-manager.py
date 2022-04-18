@@ -242,9 +242,9 @@ class HolidayList:
     @staticmethod
     def Get_Forecasted_Weather_Data():
         try:
-            url = "https://community-open-weather-map.p.rapidapi.com/forecast/"
+            url = "https://community-open-weather-map.p.rapidapi.com/forecast/daily"
 
-            querystring = {"q":"Fort Myers,us",}
+            querystring = {"q":"Fort Myers,us","cnt":"7"}
 
             headers = {
                 "X-RapidAPI-Host": "community-open-weather-map.p.rapidapi.com",
@@ -253,27 +253,16 @@ class HolidayList:
 
             response = requests.get(url, headers=headers, params=querystring).json()
 
-            timestamp = time.strftime('%H:%M:%S')
-            time_list = ['03:00:00','06:00:00','09:00:00','12:00:00','15:00:00','18:00:00','21:00:00','24:00:00']
-            future_time_stamp = ""
-            for i in range(len(time_list)):
-                if str(timestamp) <= time_list[i]:
-                    future_timestamp = time_list[i]
-                    break
-
-            if future_timestamp == '24:00:00':
-                future_time_stamp = '00:00:00'
-
-            weather_list = []
             date_list = []
+            weather_list = []
 
+            # Each day in forecast is a unix timestamp
             for i in range(len(response['list'])):
-                if future_time_stamp in response['list'][i]['dt_txt']:
-                    date = response['list'][i]['dt_txt']
-                    date = date.replace(f' {future_time_stamp}', '')
-                    date_list.append(date)
-                    weather = response['list'][i]['weather'][0]['description']
-                    weather_list.append(weather)
+                unix_timestamp = response['list'][i]['dt']
+                date = datetime.datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d')
+                date_list.append(date)
+                weather = response['list'][i]['weather'][0]['description']
+                weather_list.append(weather)
 
 
         except KeyError as err:
@@ -282,8 +271,7 @@ class HolidayList:
     
         return weather_list, date_list
 
-        # Get Weather Forecast for Next 5 Days
-        # Each Day has 8 Forecasts, One for every 3 hours, so select the next applicable forecast based on current time
+        # Get Weather Forecast for Next 7 Days
         # Return list of weather descriptions and the list of their respective dates
 
 
