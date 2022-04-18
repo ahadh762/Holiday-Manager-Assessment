@@ -132,9 +132,9 @@ class HolidayList:
                 holiday_name = holiday.text
 
                 # Date is contained in text in the tag that is 3 tags prior to the href tag
-                date = holiday.find_previous().find_previous().find_previous()
+                date = holiday.find_previous().find_previous().find_previous().getText()
 
-                holiday_date = date+ f" {year}"
+                holiday_date = date + f" {year}"
 
                 format = '%d %b %Y'
                 holiday_date = datetime.datetime.strptime(holiday_date, format).date()
